@@ -16,7 +16,7 @@ After execute script, the access urls for loadbalancer, grafana and jenkins will
 Some terraform errors caused by dependency can occur, execute more than one time to be sure that all the necessary infra was created.<br>
 To destroy all the created infra, run: "terraform destroy -var-file=gmilechallege.tfvar" in the terraform/$region folder<br>
 The file terraform/us-east-1/gmilechallenge.tfvars needs some real information, please fill it!<br>
-The private file used by ansible to access the ec2 instances have to be in ansible folder named as amzn.pem<br>
+The ssh private key file used by ansible to access the ec2 instances have to be in ansible folder named as amzn.pem<br>
 
 
 Infrastructure Flow
