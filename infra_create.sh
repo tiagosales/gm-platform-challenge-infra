@@ -24,7 +24,7 @@ ansible-playbook -i hosts jenkins-server.yaml
 ansible-playbook -i hosts monitoring-server.yaml
 
 echo "Jenkins Access: ${JENKINSSERVER}:8080"
-echo "Graphana Access: ${MONITORSERVER}:3000"
+echo "Grafana Access: ${MONITORSERVER}:3000"
 echo "App Access: $LBACCESS"
 
 cd $OLDPWD
