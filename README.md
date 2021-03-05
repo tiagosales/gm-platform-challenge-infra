@@ -26,3 +26,7 @@ Infrastructure Flow
 CICD Flow
 -------------------
 ![image](https://user-images.githubusercontent.com/998731/110172216-8f467000-7ddb-11eb-8b52-f1b054d71d77.png)
+
+Monitoring
+-------------------
+![image](https://user-images.githubusercontent.com/998731/110175666-ed298680-7de0-11eb-88da-75dbb976799a.png)
