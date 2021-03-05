@@ -1,0 +1,67 @@
+- name: Configure jenkins server
+  hosts: gmile-jenkins-server
+  become: true
+
+  roles:
+    - python3
+    - swap
+    - docker
+
+  tasks:
+    - name: Download file from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      aws_s3: 
+        bucket: gmile-backup 
+        object: /jenkins_home.tgz 
+        dest: /opt/jenkins_home.tgz 
+        mode: get
+
+    - name: Creates Jenkins build directory
+      file:
+        path: /opt/jenkinsaws
+        state: directory
+
+    - name: Download custom build path from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      aws_s3: 
+        bucket: gmile-backup 
+        object: /jenkinsawsDockerfile
+        dest: /opt/jenkinsaws/Dockerfile
+        mode: get
+
+    - name: Uncompress jenkins_home 
+      unarchive:
+        remote_src: yes
+        src: /opt/jenkins_home.tgz
+        dest: /opt
+
+    - name: Pull Jenkins Image
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      docker_image:
+        name: jenkins/jenkins:lts
+
+    - name: Build custom jenkins
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      docker_image:
+        name: jenkinsaws
+        tag: latest
+        push: no
+        build:
+          path: /opt/jenkinsaws
+
+    - name: Start Jenkins
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      docker_container:
+        name: jenkins
+        image: jenkinsaws
+        volumes:
+          - /opt/jenkins_home:/var/jenkins_home
+          - /bin/docker:/usr/bin/docker
+          - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+          - 8080:8080

@@ -1,0 +1,96 @@
+- name: Configure Monitoring
+  hosts: gmile-monitoring-server
+  become: true
+
+  roles:
+    - python3
+    - docker
+
+  tasks:
+    - name: Creates Prometheus dir
+      file:
+        path: /opt/prometheus
+        state: directory
+    
+    - name: Creates Grafana dir
+      file:
+        path: /opt/grafana
+        state: directory
+
+    - name: Download prometheus.yml from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      aws_s3: 
+        bucket: gmile-backup 
+        object: /prometheus.yml
+        dest: /opt/prometheus/prometheus.yml
+        mode: get
+
+    - name: Download ecs-get-tasks.sh from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      aws_s3:
+        bucket: gmile-backup
+        object: /ecs-get-tasks.sh
+        dest: /opt/prometheus/ecs-get-tasks.sh
+        mode: get
+
+
+    - name: Download grafana-ds.json from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      aws_s3:
+        bucket: gmile-backup
+        object: /grafana-ds.json
+        dest: /opt/grafana/grafana-ds.json
+        mode: get
+
+    - name: Download grafana-dash.json from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      aws_s3:
+        bucket: gmile-backup
+        object: /grafana-dash.json
+        dest: /opt/grafana/grafana-dash.json
+        mode: get
+
+    - name: Download grafana-uploadconfig.sh from S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      aws_s3:
+        bucket: gmile-backup
+        object: /grafana-uploadconfig.sh
+        dest: /opt/grafana/grafana-uploadconfig.sh
+        mode: get
+
+
+    - name: Start Grafana
+      vars:
+        ansible_python_interpreter: /usr/bin/python3 
+      docker_container:
+        name: grafana
+        image: grafana/grafana
+        network_mode: host
+
+    - name: Get task IP from ECS
+      command: "bash /opt/prometheus/ecs-get-tasks.sh"
+      register: task_ip
+
+    - replace:
+        path: /opt/prometheus/prometheus.yml
+        regexp: "%TASKIP%"
+        replace: "{{ task_ip.stdout }}"
+
+    - name: Start Prometheus
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      docker_container:
+        name: prometheus
+        image: prom/prometheus
+        restart: yes
+        network_mode: host
+        volumes:
+          - /opt/prometheus:/etc/prometheus
+
+    - name: Upload config to grafana
+      command: bash /opt/grafana/grafana-uploadconfig.sh

@@ -1,0 +1,14 @@
+---
+# tasks file for python3
+- name: Install Python3.
+  package:
+    name: python3
+    state: present
+
+- name: Install boto3 and botocore with pip3 module
+  pip:
+    name:
+    - boto3
+    - botocore
+    - docker
+    executable: pip-3.7
